@@ -1,5 +1,5 @@
 use anyhow::{bail, Result};
-use std::{collections::HashSet, io::Read};
+use std::collections::HashSet;
 
 use crate::{
     protocol::{

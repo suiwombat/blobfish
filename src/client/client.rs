@@ -1,17 +1,13 @@
-use crate::{
-    protocol::{
-        MessageType, ToMessageType, BLOCK_SIZE, BLOCK_SIZE_LESS_HEADER, HEADER_SIZE,
-        MSG_SIZE,
-    },
+use crate::protocol::{
+    MessageType, ToMessageType, BLOCK_SIZE, BLOCK_SIZE_LESS_HEADER, HEADER_SIZE, MSG_SIZE,
 };
 use anyhow::{bail, Result};
 
-use serde::{de};
-
+use serde::de;
 
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
-    net::{TcpStream},
+    net::TcpStream,
 };
 
 pub struct ClientConnection(TcpStream);
