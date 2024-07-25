@@ -1,16 +1,15 @@
 use crate::{
-    client_args::Cli,
     protocol::{
-        ToMessageType, MessageType, MyPkg, BLOCK_SIZE, BLOCK_SIZE_LESS_HEADER, HEADER_SIZE,
-        MSG_SIZE, MSG_TYPE,
+        ToMessageType, MessageType, BLOCK_SIZE, BLOCK_SIZE_LESS_HEADER, HEADER_SIZE,
+        MSG_SIZE,
     },
     server::Offer,
 };
 use anyhow::{bail, Error, Result};
-use futures::future::BoxFuture;
-use serde::{de, Serialize};
+
+use serde::{de};
 use std::sync::{Arc, RwLock};
-use std::{borrow::BorrowMut, collections::HashSet};
+use std::{collections::HashSet};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},
@@ -84,9 +83,9 @@ pub struct ReadResult {
 }
 
 impl Server<Connected> {
-    pub async fn wait_for_offer(mut self, peers: HashSet<String>) -> Result<()> {
+    pub async fn wait_for_offer(self, peers: HashSet<String>) -> Result<()> {
         let state = Offer::new(self);
-        let state = state
+        state
             .wait_for_mypkg()
             .await?
             .add_peers(peers)
@@ -124,7 +123,7 @@ impl Server<Connected> {
             let length = chunk.len() as u16;
             buf[0..MSG_SIZE].copy_from_slice(&length.to_be_bytes());
             buf[MSG_SIZE..HEADER_SIZE].copy_from_slice(&message_type.to_be_bytes());
-            buf[HEADER_SIZE..HEADER_SIZE + chunk.len()].copy_from_slice(&chunk);
+            buf[HEADER_SIZE..HEADER_SIZE + chunk.len()].copy_from_slice(chunk);
             self.state
                 .socket
                 .write_all(&buf[..HEADER_SIZE + length as usize])

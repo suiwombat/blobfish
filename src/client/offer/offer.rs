@@ -1,9 +1,9 @@
-use std::{borrow::BorrowMut, collections::HashSet, ops::Deref};
+use std::{borrow::BorrowMut, collections::HashSet};
 
 use crate::{
     client::exchange::{Exchange, Ready},
     client::Connected,
-    protocol::{MyPkg, MyPkgAck,MessageType,  NegotiateMyPkg, NegotiateMyPkgAck},
+    protocol::{MyPkg, MyPkgAck,  NegotiateMyPkg, NegotiateMyPkgAck},
     Client,
 };
 use anyhow::{bail, Error};

@@ -1,18 +1,17 @@
 use crate::{
-    client_args::Cli,
     protocol::{
-        MessageType, MyPkg, ToMessageType, BLOCK_SIZE, BLOCK_SIZE_LESS_HEADER, HEADER_SIZE,
-        MSG_SIZE, MSG_TYPE,
+        MessageType, ToMessageType, BLOCK_SIZE, BLOCK_SIZE_LESS_HEADER, HEADER_SIZE,
+        MSG_SIZE,
     },
 };
 use anyhow::{bail, Result};
-use futures::future::BoxFuture;
-use serde::{de, Serialize};
-use std::borrow::BorrowMut;
-use std::sync::Arc;
+
+use serde::{de};
+
+
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
-    net::{TcpListener, TcpStream},
+    net::{TcpStream},
 };
 
 pub struct ClientConnection(TcpStream);
@@ -56,7 +55,7 @@ impl Client<Connected> {
             let length = chunk.len() as u16;
             buf[0..MSG_SIZE].copy_from_slice(&length.to_be_bytes());
             buf[MSG_SIZE..HEADER_SIZE].copy_from_slice(&message_type.to_be_bytes());
-            buf[HEADER_SIZE..HEADER_SIZE + chunk.len()].copy_from_slice(&chunk);
+            buf[HEADER_SIZE..HEADER_SIZE + chunk.len()].copy_from_slice(chunk);
             self.inner
                 .0
                 .write_all(&buf[..HEADER_SIZE + length as usize])

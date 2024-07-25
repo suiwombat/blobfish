@@ -25,12 +25,12 @@ pub struct MyPkg {
 
 impl MyPkg {
     pub fn new(name: String, paths: Vec<String>) -> Result<MyPkg, Error> {
-        let files: Vec<File> = paths.iter().map(|p| hash_file(&p).unwrap()).collect();
+        let files: Vec<File> = paths.iter().map(|p| hash_file(p).unwrap()).collect();
         let all_files_hasher = files.iter().fold(Md5::new(), |mut hasher, v| {
             hasher.update(&v.md5sum);
             hasher
         });
-        return Ok(MyPkg {
+        Ok(MyPkg {
             name,
             md5sum: format!("{:x}", all_files_hasher.finalize()),
             // version: todo!(), // refactor
@@ -43,7 +43,7 @@ impl MyPkg {
             tags: vec![],
             commit: "dirty".into(),
             files,
-        });
+        })
     }
     pub fn load() {}
     pub fn write() {}

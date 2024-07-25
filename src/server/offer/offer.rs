@@ -1,13 +1,13 @@
-use std::{borrow::BorrowMut, collections::HashSet, ops::Deref};
+use std::{borrow::BorrowMut, collections::HashSet};
 
 use crate::{
-    protocol::{MyPkg, MyPkgAck, NegotiateMyPkg, NegotiateMyPkgAck, MessageType},
+    protocol::{MyPkg, MyPkgAck, NegotiateMyPkg, NegotiateMyPkgAck},
     server::exchange::{Exchange, Ready},
     server::Connected,
     Server,
 };
-use anyhow::{bail, Error};
-use std::sync::{Arc, RwLock};
+use anyhow::{Error};
+
 
 pub struct Offer<S: OfferState> {
     inner: Server<Connected>,
@@ -47,7 +47,7 @@ impl Offer<OfferMsg> {
         let mypkg: MyPkg = self.borrow_mut().inner.read().await?;
         dbg!(&mypkg);
         let accept: MyPkgAck;
-        if let Some(md5sum) = self.inner.get(mypkg.md5sum.to_owned()) {
+        if let Some(_md5sum) = self.inner.get(mypkg.md5sum.to_owned()) {
             println!("cache hit {}", &mypkg.md5sum);
             accept = MyPkgAck {
                 md5sum: Some(mypkg.md5sum.to_owned()),

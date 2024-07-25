@@ -1,9 +1,9 @@
-use anyhow::{bail, Error, Result};
+use anyhow::{bail, Result};
 use std::{collections::HashSet, io::Read};
 
 use crate::{
     protocol::{
-        File, MessageType, MyPkg, MyPkgAck, Piece, PieceAck, PieceExchange, PieceExchangeAck,
+        File, MyPkg, MyPkgAck, Piece, PieceAck, PieceExchange, PieceExchangeAck,
     },
     server::Connected,
     Server,
@@ -60,7 +60,7 @@ impl Exchange<Ready> {
         let filename = file.filename();
         println!("looping from {};{} for file {}", start, end, &filename);
         let mut write_at = file.write_at(filename)?;
-        for i in start..end {
+        for _i in start..end {
             let p: Piece = self.inner.read().await?;
             // println!("piece received {}", &p.piece);
             // if p.Piece < start || p.Piece > end+1 {

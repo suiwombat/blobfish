@@ -1,10 +1,10 @@
 use anyhow::{Error, Result};
 
-use std::collections::HashSet;
+
 
 use crate::{
     client::Connected,
-    protocol::{File, MyPkg, MyPkgAck, Piece,MessageType,  PieceExchange, PieceExchangeAck},
+    protocol::{File, Piece,  PieceExchange, PieceExchangeAck},
     Client,
 };
 

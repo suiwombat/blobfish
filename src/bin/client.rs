@@ -1,4 +1,4 @@
-use anyhow::{bail, Error};
+use anyhow::{Error};
 use blobfish::{
     client::Offer,
     client_args::{Cli, Commands},
@@ -8,9 +8,9 @@ use blobfish::{
 };
 use clap::Parser;
 use serde_bytes::ByteBuf;
-use std::future::Future;
-use std::pin::Pin;
-use std::sync::Arc;
+
+
+
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -42,7 +42,7 @@ async fn main() -> Result<(), Error> {
                     let p = Piece {
                         piece: piece as u64,
                         ack: None,
-                        data: ByteBuf::from(&buf),
+                        data: ByteBuf::from(buf),
                     };
                     state.send(p).await?
                 }
@@ -50,7 +50,7 @@ async fn main() -> Result<(), Error> {
             // tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
             Ok(())
         }
-        Commands::Download { file } => Ok(()),
+        Commands::Download { file: _ } => Ok(()),
         Commands::List => Ok(()),
     }
 }
