@@ -44,15 +44,6 @@ impl Exchange<Ready> {
             self.receive([start, end], file).await?;
         }
         Ok(())
-        // Ok(self)
-        // Ok(Exchange {
-        //     inner: self.inner,
-        //     state: Running {
-        //         pieces: pe.pieces,
-        //         file: pe.file,
-        //         last_state: self.state,
-        //     },
-        // })
     }
     async fn receive(&mut self, pieces: [u64; 2], file: File) -> Result<()> {
         let mut contigious = 0;
@@ -62,10 +53,6 @@ impl Exchange<Ready> {
         let mut write_at = file.write_at(filename)?;
         for _i in start..end {
             let p: Piece = self.inner.read().await?;
-            // println!("piece received {}", &p.piece);
-            // if p.Piece < start || p.Piece > end+1 {
-            //     return nil, fmt.Errorf("received an unexpected piece from our peer; piece %v [%v,%v]", p.Piece, start, end)
-            // }
             if p.piece < start || p.piece > end {
                 bail!(
                     "piece is out of bounds {} is not within {}:{}",
@@ -80,58 +67,16 @@ impl Exchange<Ready> {
             }
             if let Some(ack) = p.ack {
                 println!("ack requested for {} sending {}", &ack, &contigious);
+                // TODO enable again
                 // if *p.Ack != contiguousPiece {
                 //     delta := contiguousPiece - *p.Ack
                 //     slog.Error("out of sync in pieceExchage", "delta", delta)
                 // }
                 let pa = PieceAck { piece: contigious };
                 self.inner.write(pa).await?;
-                // self.inner.write(&MessageType::PieceAck(pa)).await?;
             }
         }
         Ok(())
     }
 }
 
-impl Exchange<Running> {
-    // pub async fn receive(mut self) -> Result<Exchange<Ready>> {
-    //     let mut contigious = 0;
-    //     println!(
-    //         "looping from {};{} for file {}",
-    //         &self.state.pieces[0], &self.state.pieces[1], self.state.file.path
-    //     );
-    //     let [start, end] = self.state.pieces;
-    //     for i in start..end {
-    //         let p: Piece = self.inner.read().await?;
-    //         println!("piece received {}", &p.piece);
-    //         // if p.Piece < start || p.Piece > end+1 {
-    //         //     return nil, fmt.Errorf("received an unexpected piece from our peer; piece %v [%v,%v]", p.Piece, start, end)
-    //         // }
-    //         if p.piece < start || p.piece > end {
-    //             bail!(
-    //                 "piece is out of bounds {} is not within {}:{}",
-    //                 p.piece,
-    //                 start,
-    //                 end
-    //             );
-    //         }
-    //         if p.piece == 0 || p.piece - 1 == contigious {
-    //             contigious = p.piece;
-    //         }
-    //         if let Some(ack) = p.ack {
-    //             println!("ack requested for {} sending {}", &ack, &contigious);
-    //             // if *p.Ack != contiguousPiece {
-    //             //     delta := contiguousPiece - *p.Ack
-    //             //     slog.Error("out of sync in pieceExchage", "delta", delta)
-    //             // }
-    //             let pa = PieceAck { piece: contigious };
-    //             // self.inner.write(&pa).await?;
-    //             self.inner.write_message_type(MessageType::PieceAck(pa)).await?;
-    //         }
-    //     }
-    //     Ok(Exchange {
-    //         inner: self.inner,
-    //         state: self.state.last_state,
-    //     })
-    // }
-}

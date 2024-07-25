@@ -169,8 +169,6 @@ impl Server<Connected> {
         let r = self.read_message_type().await?;
         let msg: T = serde_bencode::from_bytes(&r.raw_msg).map_err(|e| {
             println!("we detected a message type of {}, but got an error saying {}. are you asking for the correct message type?", r.message_type, &e);
-            // dbg!(&e);
-            // println!("{}", String::from_utf8(r.raw_msg).unwrap());
             e
         })?;
         Ok(msg)
@@ -178,44 +176,4 @@ impl Server<Connected> {
     pub async fn write<T: ToMessageType>(&mut self, t: T) -> Result<()> {
         self.write_message_type(&t.to_message_type()).await
     }
-    // pub async fn write<T: ToMessageType>(&mut self, t: T) -> Result<()> {
-    //     self.write_message_type(&t.to_message_type()).await
-    // }
-    // pub async fn read<T: de::DeserializeOwned>(&mut self) -> Result<T> {
-    //     let raw_msg = self.read_raw().await?;
-    //     let msg: T = serde_bencode::from_bytes(&raw_msg).map_err(|e| dbg!(e))?;
-    //     Ok(msg)
-    // }
-    // pub async fn read_raw(&mut self) -> Result<Vec<u8>> {
-    //     let mut buf = [0; BLOCK_SIZE];
-    //     let mut raw_msg = vec![];
-    //     // listen for a response
-    //     loop {
-    //         self.state
-    //             .socket
-    //             .read_exact(&mut buf[..HEADER_SIZE])
-    //             .await?;
-    //         let prefix_length = u16::from_be_bytes([buf[0], buf[1]]) as usize;
-    //         if prefix_length > BLOCK_SIZE_LESS_HEADER {
-    //             bail!("invalid frame length {}", prefix_length);
-    //         }
-    //         let message_type = u16::from_be_bytes([buf[2], buf[3]]) as usize;
-    //         if !MessageType::is_valid_message_type(message_type) {
-    //             bail!("invalid message type {}", message_type);
-    //         }
-    //         let n = self
-    //             .state
-    //             .socket
-    //             .read_exact(&mut buf[HEADER_SIZE..HEADER_SIZE + prefix_length])
-    //             .await?;
-
-    //         if n > 0 {
-    //             raw_msg.extend_from_slice(&buf[HEADER_SIZE..HEADER_SIZE + n]);
-    //         }
-    //         if prefix_length < BLOCK_SIZE_LESS_HEADER {
-    //             break;
-    //         }
-    //     }
-    //     Ok(raw_msg)
-    // }
 }

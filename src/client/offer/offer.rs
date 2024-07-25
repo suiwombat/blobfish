@@ -3,7 +3,7 @@ use std::{borrow::BorrowMut, collections::HashSet};
 use crate::{
     client::exchange::{Exchange, Ready},
     client::Connected,
-    protocol::{MyPkg, MyPkgAck,  NegotiateMyPkg, NegotiateMyPkgAck},
+    protocol::{MyPkg, MyPkgAck, NegotiateMyPkg, NegotiateMyPkgAck},
     Client,
 };
 use anyhow::{bail, Error};
@@ -44,7 +44,6 @@ impl Offer<OfferMsg> {
     }
     pub async fn offer(mut self, mypkg: MyPkg) -> Result<Offer<Negotiate>, Error> {
         self.borrow_mut().inner.write(mypkg.clone()).await?;
-        // self.borrow_mut().inner.write_message_type(&MessageType::MyPkg(mypkg.clone())).await?;
         let ack: MyPkgAck = self.borrow_mut().inner.read().await?;
         match ack {
             MyPkgAck {
@@ -82,7 +81,6 @@ impl Offer<Negotiate> {
         self.borrow_mut()
             .inner
             .write(msg)
-            // .write_message_type(&MessageType::NegotiateMyPkg(msg))
             .await
             .map_err(|e| dbg!(e))?;
         let resp: NegotiateMyPkgAck = self.borrow_mut().inner.read().await?;
@@ -96,11 +94,7 @@ impl Offer<Negotiate> {
 
         Ok(Exchange {
             inner: self.inner,
-            state: Ready {
-                // mypkg: self.state.mypkg,
-                // ack: self.state.ack,
-                // peers: self.state.peers,
-            },
+            state: Ready,
         })
     }
 }
