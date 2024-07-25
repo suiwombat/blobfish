@@ -1,4 +1,4 @@
-use anyhow::{Error};
+use anyhow::Error;
 use blobfish::{
     client::Offer,
     client_args::{Cli, Commands},
@@ -9,9 +9,6 @@ use blobfish::{
 use clap::Parser;
 use serde_bytes::ByteBuf;
 
-
-
-
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let args = Cli::parse();
@@ -19,7 +16,6 @@ async fn main() -> Result<(), Error> {
     match args.command {
         Commands::Upload { name, file } => {
             let mypkg = MyPkg::new(name, file).unwrap();
-            // let conn = Client::open(args.connect_to).await?;
             let mut state = Offer::new(Client::open(args.connect_to).await?)
                 .offer(mypkg.clone())
                 .await?
@@ -38,7 +34,6 @@ async fn main() -> Result<(), Error> {
                 let read_at = file.read_at()?;
                 for piece in 0..piece_count {
                     read_at(piece as u64, &mut buf)?;
-                    // println!("{}", piece);
                     let p = Piece {
                         piece: piece as u64,
                         ack: None,
@@ -47,7 +42,6 @@ async fn main() -> Result<(), Error> {
                     state.send(p).await?
                 }
             }
-            // tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
             Ok(())
         }
         Commands::Download { file: _ } => Ok(()),

@@ -6,7 +6,7 @@ use crate::{
     server::Connected,
     Server,
 };
-use anyhow::{Error};
+use anyhow::Error;
 
 
 pub struct Offer<S: OfferState> {
@@ -54,7 +54,6 @@ impl Offer<OfferMsg> {
                 files: Some(vec![]),
             };
             self.borrow_mut().inner.write(accept.clone()).await?;
-            // self.borrow_mut().inner.write_message_type(&MessageType::MyPkgAck(accept.clone())).await?;
         } else {
             self.inner.set(mypkg.md5sum.to_owned());
             println!("cache miss {}", &mypkg.md5sum);
@@ -63,7 +62,6 @@ impl Offer<OfferMsg> {
                 files: None,
             };
             self.borrow_mut().inner.write(accept.clone()).await?;
-            // self.borrow_mut().inner.write_message_type(&MessageType::MyPkgAck(accept.clone())).await?;
         }
         Ok(Offer {
             inner: self.inner,
@@ -89,8 +87,6 @@ impl Offer<Negotiate> {
             md5sum: neg_msg.md5sum,
             peers: Some(self.peers()),
         };
-        // self.borrow_mut().inner.write(&neg_ack_msg).await?;
-        // self.borrow_mut().inner.write_message_type(&MessageType::NegotiateMyPkgAck(neg_ack_msg)).await?;
         self.borrow_mut().inner.write(neg_ack_msg).await?;
         Ok(Exchange {
             inner: self.inner,
