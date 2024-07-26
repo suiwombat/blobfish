@@ -2,9 +2,7 @@ use anyhow::{bail, Result};
 use std::collections::HashSet;
 
 use crate::{
-    protocol::{
-        File, MyPkg, MyPkgAck, Piece, PieceAck, PieceExchange, PieceExchangeAck,
-    },
+    protocol::{File, MyPkg, MyPkgAck, Piece, PieceAck, PieceExchange, PieceExchangeAck},
     server::Connected,
     Server,
 };
@@ -48,7 +46,7 @@ impl Exchange<Ready> {
     async fn receive(&mut self, pieces: [u64; 2], file: File) -> Result<()> {
         let mut contigious = 0;
         let [start, end] = pieces;
-        let filename = file.filename();
+        let filename = format!("data/{}/{}", &file.md5sum, file.filename());
         println!("looping from {};{} for file {}", start, end, &filename);
         let mut write_at = file.write_at(filename)?;
         for _i in start..end {
@@ -79,4 +77,3 @@ impl Exchange<Ready> {
         Ok(())
     }
 }
-

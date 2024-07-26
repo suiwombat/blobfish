@@ -55,8 +55,11 @@ pub const MSG_TYPE: usize = 2; // msg type is a u16 and represents the max numbe
 pub const HEADER_SIZE: usize = MSG_SIZE + MSG_TYPE;
 pub const BLOCK_SIZE_LESS_HEADER: usize = BLOCK_SIZE - HEADER_SIZE;
 
-fn hash_file(p: &str) -> Result<File, Error> {
-    let f = std::fs::File::open(p)?;
+pub fn hash_file(p: &str) -> Result<File, Error> {
+    let f = std::fs::File::open(p).map_err(|e| {
+        println!("tried path {}", p);
+        dbg!(e)
+    })?;
     let mut reader = BufReader::new(f);
     let mut buf = [0; BLOCK_SIZE];
     let mut hasher = Md5::new();
@@ -104,20 +107,24 @@ impl File {
     }
     pub fn read_at(
         self,
-    ) -> Result<Box<dyn Fn(u64, &mut [u8; BLOCK_SIZE]) -> io::Result<usize>>, Error> {
+    ) -> Result<Box<dyn Fn(u64, &mut [u8; BLOCK_SIZE]) -> io::Result<usize> + Send>, Error> {
         let f = std::fs::File::open(self.path)?;
         let block_size = BLOCK_SIZE as u64;
         let capturing_closure =
             move |p: u64, buf: &mut [u8; BLOCK_SIZE]| f.read_at(p * block_size, buf);
         Ok(Box::new(capturing_closure)
             as Box<
-                dyn Fn(u64, &mut [u8; BLOCK_SIZE]) -> io::Result<usize>,
+                dyn Fn(u64, &mut [u8; BLOCK_SIZE]) -> io::Result<usize> + Send,
             >)
     }
     pub fn write_at(
         self,
         path: String,
     ) -> Result<Box<dyn FnMut(u64, &[u8]) -> io::Result<usize> + Send>, Error> {
+        // Create the directory path if it doesn't exist
+        if let Some(parent) = std::path::Path::new(&path).parent() {
+            std::fs::create_dir_all(parent)?;
+        }
         let mut f = std::fs::OpenOptions::new()
             .write(true)
             .create(true) // Create the file if it doesn't exist

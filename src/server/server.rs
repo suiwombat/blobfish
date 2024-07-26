@@ -1,19 +1,19 @@
 use crate::{
     protocol::{
-        ToMessageType, MessageType, BLOCK_SIZE, BLOCK_SIZE_LESS_HEADER, HEADER_SIZE,
-        MSG_SIZE,
+        MessageType, ToMessageType, BLOCK_SIZE, BLOCK_SIZE_LESS_HEADER, HEADER_SIZE, MSG_SIZE,
     },
     server::Offer,
 };
 use anyhow::{bail, Error, Result};
-
-use serde::{de};
+use serde::de;
+use std::collections::HashSet;
 use std::sync::{Arc, RwLock};
-use std::{collections::HashSet};
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{TcpListener, TcpStream},
 };
+use tokio_util::sync::CancellationToken;
+use tokio_util::task::TaskTracker;
 
 pub struct ServerConnection(TcpListener);
 pub struct Server<S: ServerState> {
@@ -22,7 +22,7 @@ pub struct Server<S: ServerState> {
 }
 
 pub trait ServerState {}
-pub struct Default;
+pub struct Initial;
 pub struct Listening {
     listener: ServerConnection,
     cache: Arc<RwLock<HashSet<String>>>,
@@ -34,11 +34,11 @@ pub struct Connected {
 }
 pub struct Disconnected;
 
-impl ServerState for Default {}
+impl ServerState for Initial {}
 impl ServerState for Listening {}
 impl ServerState for Connected {}
 
-impl Server<Default> {
+impl Server<Initial> {
     // TODO later for swarm
     // pub async fn open(addr: String) -> Result<Server<Connected>> {
     //     Ok(Server {
@@ -46,10 +46,10 @@ impl Server<Default> {
     //         state: Connected,
     //     })
     // }
-    pub async fn new(addr: String, peers: HashSet<String>) -> Result<Server<Listening>> {
+    pub async fn new(listener: TcpListener, peers: HashSet<String>) -> Result<Server<Listening>> {
         Ok(Server {
             state: Listening {
-                listener: ServerConnection(TcpListener::bind(addr).await?),
+                listener: ServerConnection(listener),
                 cache: Arc::new(RwLock::new(HashSet::new())),
                 peers,
             },
@@ -57,21 +57,35 @@ impl Server<Default> {
     }
 }
 impl Server<Listening> {
-    pub async fn serve(&self) -> Result<Error> {
+    pub async fn serve(&self, ctx: CancellationToken) -> Result<(), Error> {
+
+        let tracker = TaskTracker::new();
         loop {
-            // Accept an incoming connection
-            let (socket, _) = self.state.listener.0.accept().await?;
-            let peers = self.state.peers.clone();
-            let cache = self.state.cache.clone();
-            let conn = Server {
-                state: Connected { socket, cache },
-            };
-            // Spawn a new task to handle the connection
-            tokio::spawn(async move {
-                if let Err(e) = conn.wait_for_offer(peers).await {
-                    eprintln!("Failed to handle connection: {:?}", e);
+            tokio::select! {
+                _ = ctx.cancelled() => {
+                    tracker.close();
+                    tracker.wait().await;
+                    return Ok(());
                 }
-            });
+                event = self.state.listener.0.accept() => {
+                    match event {
+                        Ok((socket, _)) => {
+                            let peers = self.state.peers.clone();
+                            let cache = self.state.cache.clone();
+                            let conn = Server {
+                                state: Connected { socket, cache },
+                            };
+                            // Spawn a new task to handle the connection
+                            tracker.spawn(async move {
+                                if let Err(e) = conn.wait_for_offer(peers).await {
+                                    eprintln!("Failed to handle connection: {:?}", e);
+                                }
+                            });
+                        },
+                        Err(e) => {dbg!(e);}
+                    }
+                }
+            }
         }
     }
 }
