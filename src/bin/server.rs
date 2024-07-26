@@ -1,16 +1,15 @@
-use std::collections::HashSet;
-
-
-
 use blobfish::Server;
-
-
+use std::collections::HashSet;
+use tokio::net::TcpListener;
+use tokio_util::sync::CancellationToken;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Server::new("127.0.0.1:8080".into(), HashSet::new())
+    let listener = TcpListener::bind("127.0.0.1:8080").await?;
+    let token = CancellationToken::new();
+    Server::new(listener, HashSet::new())
         .await?
-        .serve()
+        .serve(token.clone())
         .await?;
     Ok(())
 }

@@ -8,7 +8,6 @@ use crate::{
 };
 use anyhow::Error;
 
-
 pub struct Offer<S: OfferState> {
     inner: Server<Connected>,
     state: S,

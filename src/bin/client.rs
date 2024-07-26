@@ -3,7 +3,6 @@ use blobfish::{
     client::Offer,
     client_args::{Cli, Commands},
     protocol::{MyPkg, Piece, BLOCK_SIZE},
-    // client::{Client, Connected, HandlerState, Session},
     Client,
 };
 use clap::Parser;
